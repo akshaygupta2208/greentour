@@ -1,5 +1,7 @@
 package com.greentour.bike.application;
 
+import android.app.Dialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -9,12 +11,18 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,6 +30,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+    private static final String TAG = "FCM Service";
 
     // Array of strings storing country names
     String[] countries = new String[]{
@@ -65,13 +74,16 @@ public class MainActivity extends AppCompatActivity
             "Japanese Yen"
     };
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+
+        //Log.d("AKSHAY", FirebaseInstanceId.getInstance().getToken());
+        //Log.d("AKSHAY", "END");
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -180,4 +192,55 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+    public void leavingAppDialog() {
+        final Dialog dialog = new Dialog(MainActivity.this,R.style.ThemeDialogCustom);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setCanceledOnTouchOutside(true);
+        dialog.setContentView(R.layout.dialog_logout);
+
+        TextView tvYes = (TextView) dialog.findViewById(R.id.tvYes);
+        TextView tvLogoutText = (TextView) dialog.findViewById(R.id.tvLogoutText);
+        TextView tvNo = (TextView) dialog.findViewById(R.id.tvNo);
+
+        tvLogoutText.setText("Are you sure you want to leave the App?");
+
+        tvYes.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //Toast.makeText(mContext, R.string.logoutMsg, Toast.LENGTH_SHORT).show();
+                dialog.dismiss();
+                Intent setIntent = new Intent(Intent.ACTION_MAIN);
+                setIntent.addCategory(Intent.CATEGORY_HOME);
+                setIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(setIntent);
+                finish();
+            }
+        });
+
+        tvNo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
+
+    }
+
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        //Handle the back button
+        if (keyCode == android.view.KeyEvent.KEYCODE_BACK) {
+
+            leavingAppDialog();
+
+            return true;
+        } else {
+            return super.onKeyDown(keyCode, event);
+        }
+    }
+
 }
